@@ -1,0 +1,29 @@
+@startuml
+title Sequence Diagram: Кеширование списка заказов и обновление статуса
+
+participant "Operator (User)" as User
+participant "MES API" as API
+participant "Redis Cache" as Cache
+participant "MES Database" as DB
+
+== Чтение списка заказов ==
+User -> API: 1. Запрос списка заказов
+API -> Cache: 2. Проверить кеш
+
+alt Данные есть в кеше
+    Cache -> API: 3a. Отдать список заказов
+    API -> User: 4a. Вернуть список заказов
+else Данных нет в кеше
+    API -> DB: 3b. Запросить данные
+    DB -> API: 4b. Вернуть данные из БД
+    API -> Cache: 5. Сохранить данные в кеш
+    API -> User: 6. Вернуть список заказов
+end
+
+== Обновление статуса заказа ==
+User -> API: 7. Изменить статус заказа
+API -> DB: 8. Обновить статус в БД
+DB -> API: 9. Подтвердить обновление
+API -> Cache: 10. Очистить кеш заказов
+
+@enduml
